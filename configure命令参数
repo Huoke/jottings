@@ -1,11 +1,14 @@
- configure --prefix=/”的作用是：编译的时候用来指定程序存放路径 
- 1、不指定prefix
+http://www.ha97.com/book/lfs-book-6.6/index.html
+
+configure --prefix=/”的作用是：编译的时候用来指定程序存放路径 
+ 不指定prefix
  可执行文件默认放在/usr /local/bin
  库文件默认放在/usr/local/lib
  配置文件默认放在/usr/local/etc。
  其它的资源文件放在/usr /local/share。
- 2、指定prefix，直接删掉一个文件夹就够了。
+
  
-  configure --disable-shared 
+ configure --disable-shared 是不建立共享库
   
-  configure --with-pic
+ configure --with-pic  软件包选项，这里是尝试使用pic 
+
