@@ -9,4 +9,4 @@
 
 或者，在Squid的主站点[Squid WWW site ](http://www.squid-cache.org) 和 [FTP站点](ftp://www.squid-cache.org/pub/) 下载源代码文件。
 
-上下文差异通常可用于升级到新版本。这些可以应用于补丁程序（可从[GNU FTP站点](ftp://ftp.gnu.org/gnu/patch) 或您的发行版获得）。
+上下文差异通常可用于升级到新版本。这些可以应用于补丁程序（可从[GNU FTP站点] (ftp://ftp.gnu.org/gnu/patch) 或您的发行版获得）。
