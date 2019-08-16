@@ -13,3 +13,4 @@
 # 2、有预编译的二进制文件吗？
 请看[SquidFaq/BinaryPackages](https://wiki.squid-cache.org/SquidFaq/BinaryPackages)
 # 3、如何编译 Squid
+在运行make之前，必须自己运行配置脚本。我们建议您首先调用./configure--help，并记下您需要的配置选项，以便支持您打算使用的功能。不要在您认为不需要的特性中编译。
