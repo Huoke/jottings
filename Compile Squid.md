@@ -12,3 +12,4 @@
 上下文差异通常可用于升级到新版本。这些可以应用于补丁程序（可从[GNU FTP站点](ftp://ftp.gnu.org/gnu/patch) 或您的发行版获得）。
 # 2、有预编译的二进制文件吗？
 请看[SquidFaq/BinaryPackages](https://wiki.squid-cache.org/SquidFaq/BinaryPackages)
+# 3、如何编译 Squid
