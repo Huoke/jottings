@@ -14,3 +14,14 @@
 请看[SquidFaq/BinaryPackages](https://wiki.squid-cache.org/SquidFaq/BinaryPackages)
 # 3、如何编译 Squid
 在运行make之前，必须自己运行配置脚本。我们建议您首先调用./configure--help，并记下您需要的配置选项，以便支持您打算使用的功能。不要在您认为不需要的特性中编译。
+```Shell
+% tar xzf squid-2.6.RELEASExy.tar.gz
+% cd squid-2.6.RELEASExy
+% ./configure --with-MYOPTION --with-MYOPTION2 etc
+% make
+```
+... 最后安装 ...
+```Shell
+% make install
+```
+Squid将默认安装到/usr/local/squid中。如果您希望安装到其他地方，请参阅--prefix选项进行配置。
