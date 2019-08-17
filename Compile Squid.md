@@ -97,4 +97,5 @@ Squid-2通常也需要这些，但现在在Squid-3中是默认的。
 ```
 # 4、开始构建
 ## 4.1 Ubantu，Debian
-
+Ubuntu和Debian的许多版本都是常规的构建测试和单元测试，也是我们[构建厂](https://wiki.squid-cache.org/BuildFarm)的一部分，所以编译时没问题的。
+## 4.2 Compiling with Cygwin
