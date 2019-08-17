@@ -35,6 +35,19 @@ Squid将默认安装到/usr/local/squid中。如果您希望安装到其他地�
 Clang是GCC的一个流行替代品，特别是在BSD系统上。一般来说，它也可以很好地建造鱿鱼。过去的测试和测试的其他选择是英特尔的C++编译器和Sun的SunStudio。微软Visual C++是SQUID开发人员瞄准的另一个目标，但在撰写本文（2014年4月）的时候，仍然有相当一段路要走。
 > 请注意，由于clang 对原子操作的支持中有一个bug，Squid不会建立在超过3.2的clang之上。
 ## 3.2 我还需要什么来编译鱿鱼？
+- 您将需要automake工具集来通过Makefiles编译。
+- 您需要在系统上安装Perl。
+- 您选择启用的每个功能也可能需要额外的库或工具来构建。
 ## 3.3 如何交叉编译Squid？
+使用./configure选项--host 为安装squid的计算机指定交叉编译元组。Autotools手册中有一些简单的文档说明了这个和其他交叉配置选项——特别是它们的含义是非常有用的细节。此外，Squid是使用几个自定义工具创建的，这些工具本身是在构建过程中创建的。这需要一个C++编译器来生成可以在构建平台上运行的二进制文件。HOSTCXX=参数需要提供此编译器的名称或路径。
 ## 3.4 如何应用补丁程序或差异?
+你需要补丁程序。在应用补丁之前，您可能应该复制整个目录结构。例如，如果您要从squid-2.6.stable13升级到2.6.stable14，您将运行以下命令：
+```Shell
+cp -rl squid-2.6.STABLE13 squid-2.6.STABLE14
+cd squid-2.6.STABLE14
+zcat /tmp/squid-2.6.STABLE13-STABLE14.diff.gz | patch -p1
+```
+{i} Squid-2 patches require the -p1 option.
+
+{i} Squid-3 patches require the -p0 option.
 ## 3.5 配置选项
