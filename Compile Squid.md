@@ -47,7 +47,6 @@ cp -rl squid-2.6.STABLE13 squid-2.6.STABLE14
 cd squid-2.6.STABLE14
 zcat /tmp/squid-2.6.STABLE13-STABLE14.diff.gz | patch -p1
 ```
-{i} Squid-2 patches require the -p1 option.
-
-{i} Squid-3 patches require the -p0 option.
+- Squid-2 patches require the -p1 option.
+- Squid-3 patches require the -p0 option.
 ## 3.5 配置选项
