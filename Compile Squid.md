@@ -98,4 +98,25 @@ Squid-2通常也需要这些，但现在在Squid-3中是默认的。
 # 4、开始构建
 ## 4.1 Ubantu，Debian
 Ubuntu和Debian的许多版本都是常规的构建测试和单元测试，也是我们[构建厂](https://wiki.squid-cache.org/BuildFarm)的一部分，所以编译时没问题的。
+
+Linux系统布局和Squid的默认设置是明显不同的，要将squid安装到debian/ubuntu标准文件系统位置，需要./configure选择如下设置：
+```Shell
+--prefix=/usr \
+--localstatedir=/var \
+--libexecdir=${prefix}/lib/squid \
+--datadir=${prefix}/share/squid \
+--sysconfdir=/etc/squid \
+--with-default-user=proxy \
+--with-logdir=/var/log/squid \
+--with-pidfile=/var/run/squid.pid
+```
+当然，您可以设置您需要的自定义选项。
+- 对于Debian Jesse（8）、Ubuntu Oneiric（11.10）或更旧的Squid3软件包，上述Squid标签应附加3个。
+- 记住，这些只是默认值。修改squid.conf，您可以将日志指向正确的路径，而无需解决方法或修补。
+同样，如果你需要构建你想要的功能，则需要第三方库的支持，请选择下面方法安装默认的包依赖项：
+```Shell
+aptitude build-dep squid
+```
+这只需要sources.list包含deb-src存储库来提取源包信息。分发包不支持的功能需要进行调查，以发现依赖包并安装它。
+>通常请求的是libssl dev 以支持ssl。但是，请注意，squid-3.5与openssl v1.1+不兼容。从Debian Squeeze或Ubuntu Zesty开始，必须改用libssl1.0-dev包。这在Squid-4包中解决。
 ## 4.2 Compiling with Cygwin
