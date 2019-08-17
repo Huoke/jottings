@@ -49,4 +49,52 @@ zcat /tmp/squid-2.6.STABLE13-STABLE14.diff.gz | patch -p1
 ```
 - Squid-2 patches require the -p1 option.
 - Squid-3 patches require the -p0 option.
+补丁运行完后，你需要重新构建Squid
+```Shell
+make distclean
+./configure [--option --option...]
+make
+make install
+```
+如果您的补丁程序不正常工作，您应该从GNU FTP站点获得一个更新的版本。
+理想情况下，您应该使用操作系统附带的patch命令。
 ## 3.5 配置选项
+配置脚本可以选择几个选项。最常用的是预先将程序安装在不同的目录：--prefix。默认安装目录是/usr/local/squid/。修改默认目录，可按下面方式：
+```Shell
+cd squid-x.y.z
+% ./configure --prefix=/some/other/directory/squid
+```
+某些操作系统要求文件安装在特定目录，具体情况参见下面的操作系统特定说明，./configure选项需要正确的参数。
+```Shell
+--prefix=PREFIX         install architecture-independent files in PREFIX
+                        [/usr/local/squid]
+--enable-dlmalloc[=LIB] Compile & use the malloc package by Doug Lea
+--enable-gnuregex       Compile GNUregex
+--enable-xmalloc-debug  Do some simple malloc debugging
+--enable-xmalloc-debug-trace
+                        Detailed trace of memory allocations
+--enable-xmalloc-statistics
+                        Show malloc statistics in status page
+--enable-async-io       Do ASYNC disk I/O using threads
+--enable-icmp           Enable ICMP pinging and network measurement
+--enable-delay-pools    Enable delay pools to limit bandwidth usage
+--enable-useragent-log  Enable logging of User-Agent header
+--enable-kill-parent-hack
+                        Kill parent on shutdown
+--enable-cachemgr-hostname[=hostname]
+                        Make cachemgr.cgi default to this host
+--enable-htpc           Enable HTCP protocol
+--enable-forw-via-db    Enable Forw/Via database
+--enable-cache-digests  Use Cache Digests
+                        see http://www.squid-cache.org/Doc/FAQ/FAQ-16.html
+```
+Squid-2通常也需要这些，但现在在Squid-3中是默认的。
+```Shell
+--enable-carp           Enable CARP support
+--enable-snmp           Enable SNMP monitoring
+--enable-err-language=lang
+                        Select language for Error pages (see errors dir)
+```
+# 4、开始构建
+## 4.1 Ubantu，Debian
+
