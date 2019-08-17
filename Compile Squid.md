@@ -119,4 +119,6 @@ aptitude build-dep squid
 ```
 这只需要sources.list包含deb-src存储库来提取源包信息。分发包不支持的功能需要进行调查，以发现依赖包并安装它。
 >通常请求的是libssl dev 以支持ssl。但是，请注意，squid-3.5与openssl v1.1+不兼容。从Debian Squeeze或Ubuntu Zesty开始，必须改用libssl1.0-dev包。这在Squid-4包中解决。
+## 4.2 初始化脚本 Init Script
+init.d脚本是官方debain/ubuntu包的一部分。它不直接和Squid一起出现，所以你需要从[https://alioth.debian.org/plugins/scmgit/cgi-bin/gitweb.cgi?p=pkg-squid/pkg-squid3.git;a=blob_plain;f=debian/squid.rc]()下载一份复制到/etc/init.d/squid
 ## 4.2 Compiling with Cygwin
