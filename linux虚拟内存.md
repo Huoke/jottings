@@ -46,4 +46,66 @@ void main() {
 ##### 0x18de000     sbrk(4)返回的空间地址，并把地址+size（0x18de004）{0x18de000-0x18de004 为sbrk(4)分配的4个字节的空间，返回空间首地址就是 0x18de000}
 ##### 0x18de004     sbrk(4)再次调用sbrk(4)，返回的指针为地址 0x18de004,指针再次+size{0x18de004-0x18de008 为这次调用sbrk分配的4个字节的空间}
 ## 3.2 代码2
-
+```Shell
+#include<stdio.h>
+#include<unistd.h>
+void main()
+{
+   int *p=sbrk(0);   //返回空闲空间的首地址，但系统并没有给虚拟内存映射物理内存
+   *p=800;           //会出现段错误，无法访问p指向的地址的空间
+   brk(p+1);         //brk(p+1) 是把p指针向后移了4个字节，系统把虚拟内存映射到了物理内存（映射了一个页的物理内存4k），brk分配了4个字节的动态内存空间
+   *p=800;           // 不会出现段错误
+   
+   brk(p);          // brk(p)又把指针向回移了4个字节，释放了4个字节的空间
+   *p=800;          //则不能再访问p的空间
+}
+```
+## 3.3 应用案例
+写一个程序查找 1-10000 之间所有的素数，并且存放到缓冲, 然后打印，缓冲的实现使用sbrk/brk
+#### 流程:
+循环判定是否素数(isPrimer)是,分配空间存放；不是,继续下步.
+```Shell
+#include<stdio.h>
+#include<unistd.h>
+ 
+int isprimer(int a)
+{
+    int i;
+    for(i=2; i<a; i++)
+    {
+        if(a%i==0)
+            return 1;
+        else              
+            return 0;
+    }
+}
+void main()
+{
+    int i=2;
+    int *p=sbrk(0); // 分配 4g的虚拟内存，还没有映射物理内存地址，返货这块虚拟内存地址的首地址
+    int *r;
+    r=p; // 首地址给 r
+    for( ; i<1000; i++)
+    {
+        if(isprimer(i)==0) {
+          brk(r+1);  // 把地址向后移动了4个字节，系统把虚拟内存映射到了物理内存（映射了一个页的物理内存4k）
+          *r=i;      // 给这个有物理地址映射的地址赋值
+          r=sbrk(0); // 继续得到空闲虚拟内存内存的首地址
+        }
+    }
+    r=p;
+    while(r!=sbrk(0))
+    {
+      printf(“%d\n”,*r);
+      r++
+    }
+    brk(p); // free
+}
+```
+ brk/sbrk
+# 三、异常处理
+```Shell
+intbrk(void*)
+void*sbrk(int);
+```
+如果成功.brk返回0  sbrk返回指针。失败 brk返回-1  sbrk返回(void*)-1
