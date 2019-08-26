@@ -13,6 +13,8 @@
 - tcmalloc – Google
 - libumem – Solaris
 - …
-本文主要学习介绍在linux glibc使用的ptmalloc2实现原理。本来linux默认的是dlmalloc，但是由于其不支持多线程堆管理，所以后来被支持多线程的prmalloc2代替了。
+本文主要学习介绍在linux glibc使用的ptmalloc2实现原理。本来linux默认的是dlmalloc，但是由于其不支持多线程堆管理，所以后来被支持多线程的ptmalloc2代替了。
 
 当然在linux平台*malloc本质上都是通过系统调用brk或者mmap实现的。关于这部分内容，一定要学习下面这篇文章：[Syscalls used by malloc](https://github.com/Huoke/jottings/blob/master/Linux系统虚拟内存问题/Syscalls%20used%20by%20malloc.md#malloc使用的系统调用)
+
+鉴于篇幅，本文就不加以详细说明了，只是为了方便后面对堆内存管理的理解，截取其中函数调用关系图
