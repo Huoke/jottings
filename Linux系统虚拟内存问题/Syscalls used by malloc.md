@@ -4,4 +4,4 @@
 brk() 通过增加程序中断位置从内核中获取内存（初始化非零）。最开始堆的开头(start_brk)和结尾部分都指向相同的部分。
 - 当ASLR关闭时，start_k和brk将指向data/bss段的末尾（end_data）。
 - 当ASLR打开时，start_brk和brk将等于data/BSS段的结束（结束BRK数据）加上随机brk偏移量。
-http://static.duartes.org/img/blogPosts/linuxFlexibleAddressSpaceLayout.png
+![](http://static.duartes.org/img/blogPosts/linuxFlexibleAddressSpaceLayout.png)
