@@ -7,3 +7,37 @@ brk() 通过增加程序中断位置从内核中获取内存（初始化非零�
 ![](http://static.duartes.org/img/blogPosts/linuxFlexibleAddressSpaceLayout.png)
 
 上面的“进程虚拟内存布局”图片显示start_brk是堆段的开始，brk（程序中断）是堆段的结束。
+## 二、示例:
+```Shell
+/* sbrk and brk example */
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+int main()
+{
+        void *curr_brk, *tmp_brk = NULL;
+
+        printf("Welcome to sbrk example:%d\n", getpid());
+
+        /* sbrk(0) gives current program break location */
+        tmp_brk = curr_brk = sbrk(0);
+        printf("Program Break Location1:%p\n", curr_brk);
+        getchar();
+
+        /* brk(addr) increments/decrements program break location */
+        brk(curr_brk+4096);
+
+        curr_brk = sbrk(0);
+        printf("Program break Location2:%p\n", curr_brk);
+        getchar();
+
+        brk(tmp_brk);
+
+        curr_brk = sbrk(0);
+        printf("Program Break Location3:%p\n", curr_brk);
+        getchar();
+
+        return 0;
+}
+```
