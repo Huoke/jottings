@@ -126,4 +126,48 @@ int main()
         return 0;
 }
 ```
+## 2.2 输出分析
+1. 内存映射前(映射物理内存)：
+在下面的输出中，我们只能看到属于共享库libc.so和ld-linux的内存映射段。
+```Shell
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/syscalls$ cat /proc/6067/maps
+08048000-08049000 r-xp 00000000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+08049000-0804a000 r--p 00000000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+0804a000-0804b000 rw-p 00001000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+b7e21000-b7e22000 rw-p 00000000 00:00 0 
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/syscalls$
+```
+2. 内存映射后:
+```Shell
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/syscalls$ cat /proc/6067/maps
+08048000-08049000 r-xp 00000000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+08049000-0804a000 r--p 00000000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+0804a000-0804b000 rw-p 00001000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+b7e00000-b7e22000 rw-p 00000000 00:00 0 
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/syscalls$
+```
+在下面的输出中，我们可以观察到我们的内存映射段（b7e0000–b7e2100，大小为132kb）与已经存在的内存映射段（b7e1000–b7e2000）相结合。
+- 其中b7e0000-b7e2000是此段的虚拟地址范围
+- rw-p是标志（读、写、不执行、私有）
+- 00000000是文件偏移量–因为它没有从任何文件映射，所以这里是零
+- 00:00是主要/次要设备号——因为它没有从任何文件映射，所以这里是零。
+- 0是inode编号-因为它没有从任何文件映射，所以这里是零
+
+3. munmap之后：
+```Shell
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/syscalls$ cat /proc/6067/maps
+08048000-08049000 r-xp 00000000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+08049000-0804a000 r--p 00000000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+0804a000-0804b000 rw-p 00001000 08:01 539691     /home/sploitfun/ptmalloc.ppt/syscalls/mmap
+b7e21000-b7e22000 rw-p 00000000 00:00 0 
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/syscalls$
+```
+在下面的输出中，我们可以看到内存映射段是未映射的，即其相应的内存被释放到操作系统。
+
+>注意：在我们的示例程序中，ASLR被关闭。
+
+
 
