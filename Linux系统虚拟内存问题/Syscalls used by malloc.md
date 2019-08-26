@@ -7,7 +7,7 @@ brk() 通过增加程序中断位置从内核中获取内存（初始化非零�
 ![](http://static.duartes.org/img/blogPosts/linuxFlexibleAddressSpaceLayout.png)
 
 上面的“进程虚拟内存布局”图片显示start_brk是堆段的开始，brk（程序中断）是堆段的结束。
-## 二、示例:
+### 1.1、示例:
 ```Shell
 /* sbrk and brk example */
 #include <stdio.h>
@@ -41,7 +41,7 @@ int main()
         return 0;
 }
 ```
-### 2.1 分析输出：
+### 1.2 分析输出：
 ```Shell
 Welcome to sbrk example:28478
 Program Break Location1:0x804b000
@@ -78,3 +78,52 @@ Program Break Location2:0x804c000
 0804b000-0804c000 rw-p 00000000 00:00 0          [heap]
 b7e21000-b7e22000 rw-p 00000000 00:00 0 
 ```
+其中:
+- 0804b000-0804c000是此段的虚拟地址范围
+- rw-p是标志（读、写、不执行、私有或者专用）
+- 00000000 是文件偏移量，因为它没有从任何文件映射，所以这里为零。
+- 00:00是主要/次要设备号——因为它没有从任何文件映射，所以这里是零。
+- 0是inode编号-因为它没有从任何文件映射，所以这里是零
+- [heap] 是堆段
+# 二、mmap
+malloc使用mmap创建私有匿名映射段。私有匿名映射的主要目的是分配新内存（零填充），而这个新内存将被调用进程独占使用。
+## 2.1 示例：
+```Shell
+/* Private anonymous mapping example using mmap syscall */
+#include <stdio.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+
+void static inline errExit(const char* msg)
+{
+        printf("%s failed. Exiting the process\n", msg);
+        exit(-1);
+}
+
+int main()
+{
+        int ret = -1;
+        printf("Welcome to private anonymous mapping example::PID:%d\n", getpid());
+        printf("Before mmap\n");
+        getchar();
+        char* addr = NULL;
+        addr = mmap(NULL, (size_t)132*1024, PROT_READ|PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (addr == MAP_FAILED)
+                errExit("mmap");
+        printf("After mmap\n");
+        getchar();
+
+        /* Unmap mapped region. */
+        ret = munmap(addr, (size_t)132*1024);
+        if(ret == -1)
+                errExit("munmap");
+        printf("After munmap\n");
+        getchar();
+        return 0;
+}
+```
+
