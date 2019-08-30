@@ -1,3 +1,4 @@
+```Shell
 CC = gcc -m64
 AR = ar
 LD = ld
@@ -60,3 +61,4 @@ $(PC_OBJ):%.o:%.pc
 clean:
 	@echo "Removing linked and compiled files......"
 	rm -f $(OBJ) $(PC_OBJ) $(CPP_OBJ) $(TARGETPATH)/$(TARGET)
+```
