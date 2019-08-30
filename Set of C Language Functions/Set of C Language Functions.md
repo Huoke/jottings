@@ -2,6 +2,7 @@
 ## strdup（）
 strdup（）函数是c语言中常用的一种字符串拷贝库函数，一般和free（）函数成对出现。
 原型： extern char *strdup(char *s);
+
 头文件：string.h
 ```Shell
 char *strdup(const char *s)
