@@ -177,12 +177,49 @@ b7605000-b7e07000 rw-p 00000000 00:00 0          [stack:6594]
 ...
 sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
 ```
-"After free in thread1":
+"After free in thread1": 下面的输出中我们看到释放已经分配的内存空间但是堆内存不会被操作系统回收。相反，分配的内存区域（大小为1000字节）被释放到“glibc malloc”，它将这个释放的块添加到其线程arenas bin中。
+```Shell
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ ./mthread 
+Welcome to per thread arena example::6501
+Before malloc in main thread
+After malloc and before free in main thread
+After free in main thread
+Before malloc in thread 1
+After malloc and before free in thread 1
+After free in thread 1
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ cat /proc/6501/maps
+08048000-08049000 r-xp 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+08049000-0804a000 r--p 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804a000-0804b000 rw-p 00001000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804b000-0806c000 rw-p 00000000 00:00 0          [heap]
+b7500000-b7521000 rw-p 00000000 00:00 0 
+b7521000-b7600000 ---p 00000000 00:00 0 
+b7604000-b7605000 ---p 00000000 00:00 0 
+b7605000-b7e07000 rw-p 00000000 00:00 0          [stack:6594]
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
+```
+## Arena：
+arena个数:在上面的例子中，我们看到主线程包含主arena，thread1有自己独立的thread arena。所以线程和arena之间是不是一对一的关系而不考虑线程的数量呢？当然不是。一个变态的应用程序可以包含很多的线程数（而不是核心数），在这种情况下，每个线程有一个arena变得有点昂贵和无用。因此，出于这个原因，应用程序的arena数量是基于系统中存在的核心数。
+```Shell
+For 32 bit systems:
+     Number of arena = 2 * number of cores.
+For 64 bit systems:
+     Number of arena = 8 * number of cores.
 
-
-
-
-
+```
+## Multiple Arena:
+举个例子: 一个多线程APP(4个线程—— 一个主线程 + 3个用户线程)运行在单核的32bit的操作系统机器上。这种情况下线程数thread(4)>核心数。因此, 在这种情况下，“glibc malloc” 确保所有可用线程共享多个arena。但它是如何分享的呢？
+- When main thread, calls malloc for the first time already created main arena is used without any contention.
+- When thread 1 and thread 2 calls malloc for the first time, a new arena is created for them and its used without any contention. Until this point threads and arena have one-to-one mapping.
+- 当第3个线程第一次调用malloc时，计算arena的限制数量，发现线程数量超过了计算的arena数量，所以尝试使用已经存在的arena(主线程arena、或者thread1 arena1、或者thread2的arena2)。
+- 重复使用arena:
+  - 一点轮询到可用的arenas，就尝试锁定arena。
+  - 如果加锁成功 (lets say main arena is locked successfully), 返回成功加锁的arena给用户程序。
+  - 如果当前的arena没有空闲，就在下一个arena中继续尝试。
+- 现在第三个线程第二次调用malloc时, malloc 将尝试使用第一次调用malloc时使用的arena(也就是主线程的arena)。 主arena是空闲的则使用否则线程3将被阻塞直到主arena被释放。因此主arena是被主线程和thread3共享的。
+## Multiple Heaps：
 
 鉴于篇幅，本文就不加以详细说明了，只是为了方便后面对堆内存管理的理解，截取其中函数调用关系图：
 
