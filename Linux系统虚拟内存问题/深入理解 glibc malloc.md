@@ -95,6 +95,50 @@ b7e05000-b7e07000 rw-p 00000000 00:00 0
 ...
 sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
 ```
+"After malloc in main thread": 主线程调用 malloc 之后，在下面的输出中，我们可以看到堆段已经创建，它就在数据段（0804b000-0806c000）的正上方，通过使用brk syscall 来增加程序中断位置来创建堆内存。同样需要注意，即使分配了1000字节的内存，malloc已经创建堆出132 KB的内存。这个连续的内存空间就称为**arena**。因为这个arena是被主线程创建的所以称为**main arena**。之后申请内存将继续使用这个arena直到arena的空闲空间使用完毕。When arena runs out of free space, it can grow by increasing program break location (After growing top chunk’s size is adjusted to include the extra space). Similarly arena can also shrink when there is lot of free space on top chunk.
+
+
+
+**NOTE**: 顶部内存块是arena最顶部的内存块。详细的内容请查看"Top Chunk"部分。
+Top chunk is the top most chunk of an arena. For further details about it, see “Top Chunk” section below.
+```Shell
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ ./mthread 
+Welcome to per thread arena example::6501
+Before malloc in main thread
+After malloc and before free in main thread
+...
+sploitfun@sploitfun-VirtualBox:~/lsploits/hof/ptmalloc.ppt/mthread$ cat /proc/6501/maps
+08048000-08049000 r-xp 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+08049000-0804a000 r--p 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804a000-0804b000 rw-p 00001000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804b000-0806c000 rw-p 00000000 00:00 0          [heap]
+b7e05000-b7e07000 rw-p 00000000 00:00 0 
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
+```
+"After free in main thread": 在下面的输出中我们可以看到当分配的内存被释放后，在它后面的内存不会立刻被操作系统回收。已经分配的内存区域(1000 bytes)被释放通过"glibc malloc"库，它把空闲的内存区域加到 main arena bin(在glibc malloc中, freelists(空闲链表)就是内存块容器(bins))。 
+Later when user requests memory, ‘glibc malloc’ doesnt get new heap memory from kernel, instead it will try to find a free block in bin. And only when no free block exists, it obtains memory from kernel.
+```C++
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ ./mthread 
+Welcome to per thread arena example::6501
+Before malloc in main thread
+After malloc and before free in main thread
+After free in main thread
+...
+sploitfun@sploitfun-VirtualBox:~/lsploits/hof/ptmalloc.ppt/mthread$ cat /proc/6501/maps
+08048000-08049000 r-xp 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+08049000-0804a000 r--p 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804a000-0804b000 rw-p 00001000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804b000-0806c000 rw-p 00000000 00:00 0          [heap]
+b7e05000-b7e07000 rw-p 00000000 00:00 0 
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
+```
+
+
+
+
+
 
 鉴于篇幅，本文就不加以详细说明了，只是为了方便后面对堆内存管理的理解，截取其中函数调用关系图：
 
