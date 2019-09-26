@@ -24,10 +24,77 @@
 
 **系统调用:** 如本文所示，malloc调用的是brk或者mmap系统调用。
 
-**多线程:** 在Linux的早期，dlmalloc被用作默认内存分配器。但后来由于ptmalloc2对线程的支持，使得它成为linux的默认内存分配器。对多线程的支持能提高分配器的性能，同时也提高了应该程序的性能。
+**多线程:** 在Linux的早期，dlmalloc被用作默认内存分配器。但后来由于ptmalloc2对线程的支持，使得它成为linux的默认内存分配器。对多线程的支持能提高分配器的性能，同时也提高了应该程序的性能。在dlmalloc体系中，当两个线程同时调用malloc时，只有一个线程可以进入临界区，因为内存空闲链表freelist数据结构是被所有线程共享的。因此，在多线程场景中，内存分配需要时间，从而导致性能下降。在ptmalloc2中，当两个线程同时调用malloc时，会立即分配内存，因为每个线程都维护一个单独的堆栈，因此维护这些堆的空闲链表数据结构也是独立的。为每个线程维护单独的堆和freelist数据结构的行为成为per thread arena。
 
+#### Example:
+```C++
+/* per thread arena example */
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/types.h>
 
+void* threadFunc(void* arg)
+{
+    printf("Before malloc in thread 1 \n");
+    getchar();
+    char* addr = (char*)malloc(1000);
+    printf("After malloc and befor free in thread 1 \n");
+    getchar();
+    free(addr);
+    printf("After free in thread 1\n");
+    getchar();
+}
 
+int main()
+{
+    pthread_t t1;
+    void* s;
+    int ret;
+    char* addr;
+    
+    printf("Welcome to per thread arena example::%d\n",getpid());
+    printf("Before malloc in main thread\n");
+    
+    getchar();
+    
+    add = (char*)malloc(1000);
+    printf(After malloc and before free in main thread\n);
+    getchar();
+    free(add);
+    printf(After free in main thread\n);
+    getchar();
+    ret = pthread_create(&t1, NULL, threadFunc, NULL);
+    if(ret)
+    {
+        printf("Thread creation error\n");
+        return -1;
+    }
+    ret = pthread_join(t1, &s);
+    if(ret)
+    {
+        printf("Thread join error\n");
+        return -1;
+    }
+    return 0;
+}
+```
+#### Output Analysis:
+"Before malloc in main thread":在下面输出中我们可以看到还没有堆段，也没有每个线程堆栈，因为thread1还没有创建。
+```Shell
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ ./mthread 
+Welcome to per thread arena example::6501
+Before malloc in main thread
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ cat /proc/6501/maps
+08048000-08049000 r-xp 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+08049000-0804a000 r--p 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804a000-0804b000 rw-p 00001000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+b7e05000-b7e07000 rw-p 00000000 00:00 0 
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
+```
 
 鉴于篇幅，本文就不加以详细说明了，只是为了方便后面对堆内存管理的理解，截取其中函数调用关系图：
 
