@@ -200,7 +200,7 @@ b7605000-b7e07000 rw-p 00000000 00:00 0          [stack:6594]
 ...
 sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
 ```
-## Arena：
+# Arena：
 arena个数:在上面的例子中，我们看到主线程包含主arena，thread1有自己独立的thread arena。所以线程和arena之间是不是一对一的关系而不考虑线程的数量呢？当然不是。一个变态的应用程序可以包含很多的线程数（而不是核心数），在这种情况下，每个线程有一个arena变得有点昂贵和无用。因此，出于这个原因，应用程序的arena数量是基于系统中存在的核心数。
 ```Shell
 For 32 bit systems:
@@ -219,7 +219,24 @@ For 64 bit systems:
   - 如果加锁成功 (lets say main arena is locked successfully), 返回成功加锁的arena给用户程序。
   - 如果当前的arena没有空闲，就在下一个arena中继续尝试。
 - 现在第三个线程第二次调用malloc时, malloc 将尝试使用第一次调用malloc时使用的arena(也就是主线程的arena)。 主arena是空闲的则使用否则线程3将被阻塞直到主arena被释放。因此主arena是被主线程和thread3共享的。
-## Multiple Heaps：
+## Multiple Heaps(多堆)：
+“glibc malloc”源代码中主要有以下三种数据结构:
+heap_info(堆头) ———— 单个线程arena可以有多个 
+# Chunk(内存块)：
+## 分配内存块：
+#### 注意：
+## 释放内存块：
+# Bins
+## Fast Bin：
+## Unsort Bin:
+## Small Bin:
+## Large Bin:
+## Top Chunk:
+## Last Remainder Chunk:
+
+
+
+
 
 鉴于篇幅，本文就不加以详细说明了，只是为了方便后面对堆内存管理的理解，截取其中函数调用关系图：
 
