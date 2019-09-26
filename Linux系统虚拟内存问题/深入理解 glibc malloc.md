@@ -134,6 +134,50 @@ b7e05000-b7e07000 rw-p 00000000 00:00 0
 ...
 sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
 ```
+"Before malloc in thread1": 在下面的输出中，我们可以看到没有thread1堆段，但是现在创建了thread1的线程栈。
+```C++
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ ./mthread 
+Welcome to per thread arena example::6501
+Before malloc in main thread
+After malloc and before free in main thread
+After free in main thread
+Before malloc in thread 1
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ cat /proc/6501/maps
+08048000-08049000 r-xp 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+08049000-0804a000 r--p 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804a000-0804b000 rw-p 00001000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804b000-0806c000 rw-p 00000000 00:00 0          [heap]
+b7604000-b7605000 ---p 00000000 00:00 0 
+b7605000-b7e07000 rw-p 00000000 00:00 0          [stack:6594]
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
+```
+"After malloc in thread1": 下面的输出我们可以看到thread1的堆段被创建出来。并且映射到的内存段(b7500000-b7521000 whose size is 132 KB) 因此，这显示堆内存是使用mmap syscall创建的，而不是主线程（它使用sbrk）。在这里，尽管用户只请求1000字节，但大小为1 MB的堆内存被映射到进程地址空间。在这1MB里面，因为只有132KB的内存被设置了读写权限，这将称为此线程的堆内存。这个连续的内存区域(132KB)被称为线程的 arena。
+
+**注意**: 当用户请求大小超过128kb(比如malloc(132*1024))并且arena中没有足够的空间满足用户请求时，不管请求是从主arena还是线程arena发出，都会使用mmap syscall（而不是sbrk）分配内存。
+```Shell
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ ./mthread 
+Welcome to per thread arena example::6501
+Before malloc in main thread
+After malloc and before free in main thread
+After free in main thread
+Before malloc in thread 1
+After malloc and before free in thread 1
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$ cat /proc/6501/maps
+08048000-08049000 r-xp 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+08049000-0804a000 r--p 00000000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804a000-0804b000 rw-p 00001000 08:01 539625     /home/sploitfun/ptmalloc.ppt/mthread/mthread
+0804b000-0806c000 rw-p 00000000 00:00 0          [heap]
+b7500000-b7521000 rw-p 00000000 00:00 0 
+b7521000-b7600000 ---p 00000000 00:00 0 
+b7604000-b7605000 ---p 00000000 00:00 0 
+b7605000-b7e07000 rw-p 00000000 00:00 0          [stack:6594]
+...
+sploitfun@sploitfun-VirtualBox:~/ptmalloc.ppt/mthread$
+```
+"After free in thread1":
 
 
 
